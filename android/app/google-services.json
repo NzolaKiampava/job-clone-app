@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "347830020915",
+    "project_id": "job-clone-app",
+    "storage_bucket": "job-clone-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:347830020915:android:f899e6e8550a8653166c46",
+        "android_client_info": {
+          "package_name": "kiampava.job_clone_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "347830020915-bifq9a4m2h2l9u9rl12smdf32a54jvl3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYCPGUzRtog8jvVLWK4jbK3bfpWuxYAjE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "347830020915-bifq9a4m2h2l9u9rl12smdf32a54jvl3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
