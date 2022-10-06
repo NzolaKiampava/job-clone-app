@@ -37,7 +37,7 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
 
   final _signUpFormkey = GlobalKey<FormState>();
   bool _obscureText = true;
-  File? imageFile;
+  File? ImageFile;
   bool _isLoadng = false;
 
   @override
@@ -122,7 +122,7 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
 
     if (croppedImage != null) {
       setState(() {
-        imageFile = File(croppedImage.path);
+        ImageFile = File(croppedImage.path);
       });
     }
   }
@@ -150,7 +150,7 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    File? ImageFile;
+    //File? ImageFile;
 
     return Scaffold(
       body: Stack(
