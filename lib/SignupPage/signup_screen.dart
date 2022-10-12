@@ -1,16 +1,23 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, non_constant_identifier_names, no_leading_underscores_for_local_identifiers, prefer_interpolation_to_compose_strings, sized_box_for_whitespace
 
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+//import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:job_clone_app/Services/global_methods.dart';
 
 import '../Services/global_variables.dart';
 
 class SignUp extends StatefulWidget {
+  const SignUp({Key? key}) : super(key: key);
+
   @override
   State<SignUp> createState() => _SignUpState();
 }
@@ -21,7 +28,7 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
 
   final TextEditingController _fullNameController =
       TextEditingController(text: '');
-  final TextEditingController _fullEmailController =
+  final TextEditingController _emailTextController =
       TextEditingController(text: '');
   final TextEditingController _passTextController =
       TextEditingController(text: '');
@@ -36,14 +43,24 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
   final FocusNode _positionCPFocusNode = FocusNode();
 
   final _signUpFormkey = GlobalKey<FormState>();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _obscureText = true;
   File? ImageFile;
   bool _isLoadng = false;
+  String? imageUrl;
 
   @override
   void dispose() {
     // TODO: implement dispose
     _animationController.dispose();
+    _fullNameController.dispose();
+    _emailTextController.dispose();
+    _passTextController.dispose();
+    _phoneNumberController.dispose();
+    _emailFocusNode.dispose();
+    _passFocusNode.dispose();
+    _positionCPFocusNode.dispose();
+    _phoneNumberFocusNode.dispose();
     super.dispose();
   }
 
@@ -127,6 +144,54 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
     }
   }
 
+  void _submitFormOnSignup() async {
+    final isValid = _signUpFormkey.currentState!.validate();
+
+    if (isValid) {
+      if (ImageFile == null) {
+        GlobalMethods.showErrorDialog(
+            error: 'Please pick an image', ctx: context);
+        return;
+      }
+
+      setState(() {
+        _isLoadng = true;
+      });
+
+      try {
+        await _auth.createUserWithEmailAndPassword(
+            email: _emailTextController.text.trim().toLowerCase(),
+            password: _passTextController.text.trim());
+        final User? user = _auth.currentUser;
+        final _uid = user!.uid;
+        final ref = FirebaseStorage.instance
+            .ref()
+            .child('userImages')
+            .child(_uid + '.jpg');
+        await ref.putFile(ImageFile!);
+        imageUrl = await ref.getDownloadURL();
+        FirebaseFirestore.instance.collection('users').doc(_uid).set({
+          'id': _uid,
+          'name': _fullNameController.text,
+          'email': _emailTextController.text,
+          'userImage': imageUrl,
+          'phoneNumber': _phoneNumberController.text,
+          'location': _locationController.text,
+          'createdAt': Timestamp.now(),
+        });
+        Navigator.canPop(context) ? Navigator.of(context) : null;
+      } catch (error) {
+        setState(() {
+          _isLoadng = false;
+        });
+        GlobalMethods.showErrorDialog(error: error.toString(), ctx: context);
+      }
+    }
+    setState(() {
+      _isLoadng = false;
+    });
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -150,7 +215,7 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    //File? ImageFile;
+    // File? ImageFile;
 
     return Scaffold(
       body: Stack(
@@ -170,7 +235,7 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
           Container(
             color: Colors.black54,
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 80),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 80),
               child: ListView(
                 children: [
                   Form(
@@ -241,7 +306,7 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
                           onEditingComplete: () => FocusScope.of(context)
                               .requestFocus(_passFocusNode),
                           keyboardType: TextInputType.emailAddress,
-                          controller: _fullEmailController,
+                          controller: _emailTextController,
                           validator: (value) {
                             if (value!.isEmpty || !value.contains('@')) {
                               return 'Please enter a valid email address';
@@ -296,8 +361,8 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
                                 color: Colors.white,
                               ),
                             ),
-                            hintText: 'Phone Number',
-                            hintStyle: TextStyle(color: Colors.white),
+                            hintText: 'Password',
+                            hintStyle: const TextStyle(color: Colors.white),
                             enabledBorder: const UnderlineInputBorder(
                               borderSide: BorderSide(color: Colors.white),
                             ),
@@ -385,6 +450,7 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
                             : MaterialButton(
                                 onPressed: () {
                                   //create a SubmitFormOnSignUP
+                                  _submitFormOnSignup();
                                 },
                                 color: Colors.cyan,
                                 elevation: 8,
@@ -392,7 +458,8 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
                                   borderRadius: BorderRadius.circular(13),
                                 ),
                                 child: Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 14),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: const [
